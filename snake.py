@@ -43,6 +43,41 @@ class Bot(Snake):
         x, y = head
         d = []
 
+        
+
+        fx=fy=6
+
+        
+        mindis=20
+        for i,j in data["food"]:
+        	distance=abs(i-x)+abs(j-y)
+        	if mindis>distance:
+        		mindis=distance
+        		fx=i
+        		fy=j
+        
+
+        if x + 1 < self.size and board[x + 1, y] == 0:
+            d.append("RIGHT")
+        if x - 1 > -1 and board[x - 1, y] == 0:
+            d.append("LEFT")
+        if y + 1 < self.size and board[x, y + 1] == 0:
+            d.append("UP")
+        if y - 1 > -1 and board[x, y - 1] == 0:
+            d.append("DOWN")
+
+        if fx-x>0 and (board[x + 1, y] <2 ):
+        	return "RIGHT"
+        elif fx-x<0 and (board[x - 1, y] <2 ):
+        	return "LEFT"
+        elif fy-y>0 and (board[x , y + 1] <2 ):
+        	return "UP"
+        elif fy-y<0 and (board[x , y - 1] <2 ):
+        	return "DOWN"
+        else: return random.choice(d)
+
+        """
+
         if x + 1 < self.size and board[x + 1, y] == 0:
             d.append("RIGHT")
         if x + 1 < self.size and board[x + 1, y] == 1:
@@ -67,3 +102,4 @@ class Bot(Snake):
             return "UP"
         else:
             return random.choice(d)
+        """
