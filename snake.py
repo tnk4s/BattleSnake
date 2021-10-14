@@ -74,6 +74,8 @@ class Bot(Snake):
         	return "UP"
         elif fy-y<0 and (board[x , y - 1] <2 ):
         	return "DOWN"
+        elif len(d) == 0:
+            return "UP"
         else: return random.choice(d)
 
         """
