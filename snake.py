@@ -2,18 +2,18 @@ import random
 
 import numpy as np
 
-# ©•ª—p‚ÌSnake‚ğì‚é‚É‚ÍAbattlesnake‚Å’è‹`‚³‚ê‚Ä‚¢‚éSnake‚ğŒp³‚·‚é•K—v‚ª‚ ‚é
+# è‡ªåˆ†ç”¨ã®Snakeã‚’ä½œã‚‹ã«ã¯ã€battlesnakeã§å®šç¾©ã•ã‚Œã¦ã„ã‚‹Snakeã‚’ç¶™æ‰¿ã™ã‚‹å¿…è¦ãŒã‚ã‚‹
 from battlesnake import Snake
 
-# class–¼‚ğ•ÏXB‘¼‚Ìƒ`[ƒ€‚Æ‚©‚Ô‚ç‚È‚¢‚æ‚¤‚É
+# classåã‚’å¤‰æ›´ã€‚ä»–ã®ãƒãƒ¼ãƒ ã¨ã‹ã¶ã‚‰ãªã„ã‚ˆã†ã«
 
 
-class Miya(Snake):
+class Bot(Snake):
     def __init__(self, name):
         super().__init__(name)
         self.size = 0
 
-    # I—¹(ƒQ[ƒ€ƒI[ƒo[ or Ÿ—˜)‚ÉŒÄ‚Î‚ê‚é
+    # çµ‚äº†æ™‚(ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼ or å‹åˆ©)ã«å‘¼ã°ã‚Œã‚‹
     def end(self, data):
         # print(f"{self.name} end")
         pass
@@ -33,60 +33,60 @@ class Miya(Snake):
 
         return board
 
-    # ‹ß‚­‚Éfood‚ª‚ ‚éê‡‚Íæ‚è‚És‚­B
-    # Šî–{‚ÍˆÚ“®‚Å‚«‚é‚Æ‚±‚ë‚ğƒ‰ƒ“ƒ_ƒ€‚Å
+    # è¿‘ãã«foodãŒã‚ã‚‹å ´åˆã¯å–ã‚Šã«è¡Œãã€‚
+    # åŸºæœ¬ã¯ç§»å‹•ã§ãã‚‹ã¨ã“ã‚ã‚’ãƒ©ãƒ³ãƒ€ãƒ ã§
     def move(self, data):
         board = self.__get_board(data)
         player = [p for p in data["players"] if p["name"] == self.name][0]
 
-        #©•ª(a)ˆÈŠO‚Í‰a‚ğ—Dæ“I‚Éæ‚è‚És‚­ƒ‚[ƒh‚ÅƒvƒŒƒC
+        #è‡ªåˆ†(a)ä»¥å¤–ã¯é¤Œã‚’å„ªå…ˆçš„ã«å–ã‚Šã«è¡Œããƒ¢ãƒ¼ãƒ‰ã§ãƒ—ãƒ¬ã‚¤
         if player["name"] != "a":
             tmp = self.__enemy_move(data,player)
             return tmp
 
         print("food",data["food"])
-        #enemys:“G‚Ìplayersƒf[ƒ^B“G‚ª•¡”‚¢‚Ä‚àŠÇ—‚Å‚«‚é‚æ‚¤‚É‚µ‚½
+        #enemys:æ•µã®playersãƒ‡ãƒ¼ã‚¿ã€‚æ•µãŒè¤‡æ•°ã„ã¦ã‚‚ç®¡ç†ã§ãã‚‹ã‚ˆã†ã«ã—ãŸ
         enemys = self.__get_ene_data(data)
         ene_num = len(enemys)
 
         d = []
         food_closest =True
         
-        #“G‚Ì”‚ª1‘Ì‚Ì‚Í__1vs1‚Åæ“¾
+        #æ•µã®æ•°ãŒ1ä½“ã®æ™‚ã¯__1vs1ã§å–å¾—
         if ene_num == 1:
             tmp = self.__1vs1(data,board,player,enemys[0])
             return tmp
 
-        #©•ª‚Ì‘Ì‚ÌÅ‰‚ÆÅŒã‚ÌÀ•W‚ğæ“¾
+        #è‡ªåˆ†ã®ä½“ã®æœ€åˆã¨æœ€å¾Œã®åº§æ¨™ã‚’å–å¾—
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
-        #©•ª‚Ì‘Ì‚ÌÅŒã‚ÌÀ•W‚ğˆê“I‚É0‚É‚·‚é‚±‚Æ‚ÅˆÚ“®‰Â”\ƒ}ƒX‚Æ‚µ‚Äˆµ‚¤
+        #è‡ªåˆ†ã®ä½“ã®æœ€å¾Œã®åº§æ¨™ã‚’ä¸€æ™‚çš„ã«0ã«ã™ã‚‹ã“ã¨ã§ç§»å‹•å¯èƒ½ãƒã‚¹ã¨ã—ã¦æ‰±ã†
         if data["turn"] > 1: 
             board[zx,zy] = 0
         
-        #©•ª‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
+        #è‡ªåˆ†ã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
         fx,fy,fmin = self.__get_food_mindis(data,player)
         #print(fx,fy,fmin)
 
-        #“G‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
+        #æ•µã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
         ene_food_mindis = [[0 for i in range(3)] for j in range(ene_num)]
         for n in range(ene_num):
             ene_fx,ene_fy,ene_fmin = self.__get_food_mindis(data,enemys[n])
             ene_food_mindis[n][0] = ene_fx
             ene_food_mindis[n][1] = ene_fy
             ene_food_mindis[n][2] = ene_fmin
-            #“G‚Ìˆê”Ô‹ß‚¢‰a‚ª©•ª‚Æ“¯‚¶‚Æ‚«AÅ’Z‹——£‚ğ”äŠr‚·‚é
+            #æ•µã®ä¸€ç•ªè¿‘ã„é¤ŒãŒè‡ªåˆ†ã¨åŒã˜ã¨ãã€æœ€çŸ­è·é›¢ã‚’æ¯”è¼ƒã™ã‚‹
             if fx==ene_fx and fy==ene_fy:
                 if fmin > ene_fmin:
-                    food_closest = False #ˆê”Ô‹ß‚­‚È‚¢‚ÍFalse
+                    food_closest = False #ä¸€ç•ªè¿‘ããªã„æ™‚ã¯False
                 elif fmin == ene_fmin:
-                    #‹——£‚ª“¯‚¶‚Æ‚«‚Í‘Ì‚Ì’·‚³‚Å”»’è
+                    #è·é›¢ãŒåŒã˜ã¨ãã¯ä½“ã®é•·ã•ã§åˆ¤å®š
                     food_closest = (len(player["body"])>len(enemys[n]["body"]))
 
         #print(ene_food_mindis)        
 
 
-        #ˆÚ“®‰Â”\‚ÈêŠ‚ğ‘I‘ğˆ‚Æ‚µ‚Ä’Ç‰Á
+        #ç§»å‹•å¯èƒ½ãªå ´æ‰€ã‚’é¸æŠè‚¢ã¨ã—ã¦è¿½åŠ 
         if ax + 1 < self.size and board[ax + 1, ay] == 0:
             d.append("RIGHT")
         if ax - 1 > -1 and board[ax - 1, ay] == 0:
@@ -97,9 +97,9 @@ class Miya(Snake):
             d.append("DOWN")
 
         if ene_num == 3: 
-            #if abs(fx-ax)<3 and abs(fy-ay)<3:     #food‚Ü‚Å‚Ì‹——£‚ªc‰¡2ƒ}ƒXˆÈ“à‚È‚çæ‚è‚És‚­
+            #if abs(fx-ax)<3 and abs(fy-ay)<3:     #foodã¾ã§ã®è·é›¢ãŒç¸¦æ¨ª2ãƒã‚¹ä»¥å†…ãªã‚‰å–ã‚Šã«è¡Œã
             if food_closest:
-                print("ˆê”Ô‹ß‚¢II")
+                print("ä¸€ç•ªè¿‘ã„ï¼ï¼")
                 if fx-ax>0 and (board[ax + 1, ay] <2 ):
                     board[zx,zy] = board[ax,ay]
                     return "RIGHT"
@@ -120,19 +120,21 @@ class Miya(Snake):
                 return random.choice(d)
 
         elif ene_num == 2:
-            if fx-ax>0 and (board[ax + 1, ay] <2 ):
-                board[zx,zy] = board[ax,ay]
-                return "RIGHT"
-            elif fx-ax<0 and (board[ax - 1, ay] <2 ):
-                board[zx,zy] = board[ax,ay]
-                return "LEFT"
-            elif fy-ay>0 and (board[ax , ay + 1] <2 ):
-                board[zx,zy] = board[ax,ay]
-                return "UP"
-            elif fy-ay<0 and (board[ax , ay - 1] <2 ):
-                board[zx,zy] = board[ax,ay]
-                return "DOWN" 
-            elif len(d) == 0:
+            if food_closest:
+                print("ä¸€ç•ªè¿‘ã„ï¼ï¼")
+                if fx-ax>0 and (board[ax + 1, ay] <2 ):
+                    board[zx,zy] = board[ax,ay]
+                    return "RIGHT"
+                elif fx-ax<0 and (board[ax - 1, ay] <2 ):
+                    board[zx,zy] = board[ax,ay]
+                    return "LEFT"
+                elif fy-ay>0 and (board[ax , ay + 1] <2 ):
+                    board[zx,zy] = board[ax,ay]
+                    return "UP"
+                elif fy-ay<0 and (board[ax , ay - 1] <2 ):
+                    board[zx,zy] = board[ax,ay]
+                    return "DOWN" 
+            if len(d) == 0:
                 board[zx,zy] = board[ax,ay]
                 return "UP"
             else:
@@ -145,7 +147,7 @@ class Miya(Snake):
 
 
     def __1vs1(self,data,board,player,enemys):
-        #©•ª‚Ì‘Ì‚ÌÅ‰‚ÆÅŒã‚ÌÀ•W‚ğæ“¾
+        #è‡ªåˆ†ã®ä½“ã®æœ€åˆã¨æœ€å¾Œã®åº§æ¨™ã‚’å–å¾—
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
         if data["turn"] > 1: 
@@ -153,13 +155,13 @@ class Miya(Snake):
         
         d = []
         
-        #©•ª‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
+        #è‡ªåˆ†ã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
         fx,fy,fmin = self.__get_food_mindis(data,player)
 
-        #“G‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
+        #æ•µã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
         ene_fx,ene_fy,ene_fmin = self.__get_food_mindis(data,enemys)
 
-        #ˆÚ“®‰Â”\‚ÈêŠ‚ğ‘I‘ğˆ‚Æ‚µ‚Ä’Ç‰Á
+        #ç§»å‹•å¯èƒ½ãªå ´æ‰€ã‚’é¸æŠè‚¢ã¨ã—ã¦è¿½åŠ 
         if ax + 1 < self.size and board[ax + 1, ay] == 0:
             d.append("RIGHT")
         if ax - 1 > -1 and board[ax - 1, ay] == 0:
@@ -169,8 +171,8 @@ class Miya(Snake):
         if ay - 1 > -1 and board[ax, ay - 1] == 0:
             d.append("DOWN")
         
-        #ˆÍ‚¢‚ğì‚éí–@
-        if ((len(player["body"])== 7) or(len(player["body"])==8)):
+        #å›²ã„ã‚’ä½œã‚‹æˆ¦æ³•
+        if ((0<fx<data["size"]-1) and (0<fy<data["size"]-1) and(len(player["body"])== 7) or (len(player["body"])==8) and fmin == 1):
             if abs(fx-ax)<2 and abs(fy-ay)<2:
                 tmp = self.__enclosure(board,player,fx,fy)
                 return tmp
