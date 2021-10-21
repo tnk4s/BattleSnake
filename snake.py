@@ -41,7 +41,6 @@ class Bot(Snake):
 
         #自分(a)以外は餌を優先的に取りに行くモードでプレイ
         if player["name"] != "a":
-            print(player["name"])
             tmp = self.__enemy_move(data,player)
             return tmp
 
@@ -67,7 +66,7 @@ class Bot(Snake):
         
         #自分の頭から一番近い餌の座標を取得
         fx,fy,fmin = self.__get_food_mindis(data,player)
-        print(fx,fy,fmin)
+        #print(fx,fy,fmin)
 
         #敵の頭から一番近い餌の座標を取得
         ene_food_mindis = [[0 for i in range(3)] for j in range(ene_num)]
@@ -82,9 +81,9 @@ class Bot(Snake):
                     food_closest = False #一番近くない時はFalse
                 elif fmin == ene_fmin:
                     #距離が同じときは体の長さで判定
-                    food_closest = (len(player["body"])>len(enemys[0]["body"]))
+                    food_closest = (len(player["body"])>len(enemys[n]["body"]))
 
-        print(ene_food_mindis)        
+        #print(ene_food_mindis)        
 
 
         #移動可能な場所を選択肢として追加
@@ -197,7 +196,7 @@ class Bot(Snake):
 
     def __get_food_mindis(self,data,player):
         ax, ay = player["body"][0]
-        print(ax,ay)
+        #print(ax,ay)
         fx=fy=6
         food_mindis=20
         for i,j in data["food"]:
