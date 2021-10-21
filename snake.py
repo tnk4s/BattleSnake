@@ -2,10 +2,10 @@ import random
 
 import numpy as np
 
-# è‡ªåˆ†ç”¨ã®Snakeã‚’ä½œã‚‹ã«ã¯ã€battlesnakeã§å®šç¾©ã•ã‚Œã¦ã„ã‚‹Snakeã‚’ç¶™æ‰¿ã™ã‚‹å¿…è¦ãŒã‚ã‚‹
+# ©•ª—p‚ÌSnake‚ğì‚é‚É‚ÍAbattlesnake‚Å’è‹`‚³‚ê‚Ä‚¢‚éSnake‚ğŒp³‚·‚é•K—v‚ª‚ ‚é
 from battlesnake import Snake
 
-# classåã‚’å¤‰æ›´ã€‚ä»–ã®ãƒãƒ¼ãƒ ã¨ã‹ã¶ã‚‰ãªã„ã‚ˆã†ã«
+# class–¼‚ğ•ÏXB‘¼‚Ìƒ`[ƒ€‚Æ‚©‚Ô‚ç‚È‚¢‚æ‚¤‚É
 
 
 class Bot(Snake):
@@ -13,7 +13,7 @@ class Bot(Snake):
         super().__init__(name)
         self.size = 0
 
-    # çµ‚äº†æ™‚(ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼ or å‹åˆ©)ã«å‘¼ã°ã‚Œã‚‹
+    # I—¹(ƒQ[ƒ€ƒI[ƒo[ or Ÿ—˜)‚ÉŒÄ‚Î‚ê‚é
     def end(self, data):
         # print(f"{self.name} end")
         pass
@@ -33,60 +33,60 @@ class Bot(Snake):
 
         return board
 
-    # è¿‘ãã«foodãŒã‚ã‚‹å ´åˆã¯å–ã‚Šã«è¡Œãã€‚
-    # åŸºæœ¬ã¯ç§»å‹•ã§ãã‚‹ã¨ã“ã‚ã‚’ãƒ©ãƒ³ãƒ€ãƒ ã§
+    # ‹ß‚­‚Éfood‚ª‚ ‚éê‡‚Íæ‚è‚És‚­B
+    # Šî–{‚ÍˆÚ“®‚Å‚«‚é‚Æ‚±‚ë‚ğƒ‰ƒ“ƒ_ƒ€‚Å
     def move(self, data):
         board = self.__get_board(data)
         player = [p for p in data["players"] if p["name"] == self.name][0]
 
-        #è‡ªåˆ†(a)ä»¥å¤–ã¯é¤Œã‚’å„ªå…ˆçš„ã«å–ã‚Šã«è¡Œããƒ¢ãƒ¼ãƒ‰ã§ãƒ—ãƒ¬ã‚¤
+        #©•ª(a)ˆÈŠO‚Í‰a‚ğ—Dæ“I‚Éæ‚è‚És‚­ƒ‚[ƒh‚ÅƒvƒŒƒC
         if player["name"] != "a":
             tmp = self.__enemy_move(data,player)
             return tmp
 
         print("food",data["food"])
-        #enemys:æ•µã®playersãƒ‡ãƒ¼ã‚¿ã€‚æ•µãŒè¤‡æ•°ã„ã¦ã‚‚ç®¡ç†ã§ãã‚‹ã‚ˆã†ã«ã—ãŸ
+        #enemys:“G‚Ìplayersƒf[ƒ^B“G‚ª•¡”‚¢‚Ä‚àŠÇ—‚Å‚«‚é‚æ‚¤‚É‚µ‚½
         enemys = self.__get_ene_data(data)
         ene_num = len(enemys)
 
         d = []
         food_closest =True
         
-        #æ•µã®æ•°ãŒ1ä½“ã®æ™‚ã¯__1vs1ã§å–å¾—
+        #“G‚Ì”‚ª1‘Ì‚Ì‚Í__1vs1‚Åæ“¾
         if ene_num == 1:
             tmp = self.__1vs1(data,board,player,enemys[0])
             return tmp
 
-        #è‡ªåˆ†ã®ä½“ã®æœ€åˆã¨æœ€å¾Œã®åº§æ¨™ã‚’å–å¾—
+        #©•ª‚Ì‘Ì‚ÌÅ‰‚ÆÅŒã‚ÌÀ•W‚ğæ“¾
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
-        #è‡ªåˆ†ã®ä½“ã®æœ€å¾Œã®åº§æ¨™ã‚’ä¸€æ™‚çš„ã«0ã«ã™ã‚‹ã“ã¨ã§ç§»å‹•å¯èƒ½ãƒã‚¹ã¨ã—ã¦æ‰±ã†
+        #©•ª‚Ì‘Ì‚ÌÅŒã‚ÌÀ•W‚ğˆê“I‚É0‚É‚·‚é‚±‚Æ‚ÅˆÚ“®‰Â”\ƒ}ƒX‚Æ‚µ‚Äˆµ‚¤
         if data["turn"] > 1: 
             board[zx,zy] = 0
         
-        #è‡ªåˆ†ã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
+        #©•ª‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
         fx,fy,fmin = self.__get_food_mindis(data,player)
         #print(fx,fy,fmin)
 
-        #æ•µã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
+        #“G‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
         ene_food_mindis = [[0 for i in range(3)] for j in range(ene_num)]
         for n in range(ene_num):
             ene_fx,ene_fy,ene_fmin = self.__get_food_mindis(data,enemys[n])
             ene_food_mindis[n][0] = ene_fx
             ene_food_mindis[n][1] = ene_fy
             ene_food_mindis[n][2] = ene_fmin
-            #æ•µã®ä¸€ç•ªè¿‘ã„é¤ŒãŒè‡ªåˆ†ã¨åŒã˜ã¨ãã€æœ€çŸ­è·é›¢ã‚’æ¯”è¼ƒã™ã‚‹
+            #“G‚Ìˆê”Ô‹ß‚¢‰a‚ª©•ª‚Æ“¯‚¶‚Æ‚«AÅ’Z‹——£‚ğ”äŠr‚·‚é
             if fx==ene_fx and fy==ene_fy:
                 if fmin > ene_fmin:
-                    food_closest = False #ä¸€ç•ªè¿‘ããªã„æ™‚ã¯False
+                    food_closest = False #ˆê”Ô‹ß‚­‚È‚¢‚ÍFalse
                 elif fmin == ene_fmin:
-                    #è·é›¢ãŒåŒã˜ã¨ãã¯ä½“ã®é•·ã•ã§åˆ¤å®š
+                    #‹——£‚ª“¯‚¶‚Æ‚«‚Í‘Ì‚Ì’·‚³‚Å”»’è
                     food_closest = (len(player["body"])>len(enemys[n]["body"]))
 
         #print(ene_food_mindis)        
 
 
-        #ç§»å‹•å¯èƒ½ãªå ´æ‰€ã‚’é¸æŠè‚¢ã¨ã—ã¦è¿½åŠ 
+        #ˆÚ“®‰Â”\‚ÈêŠ‚ğ‘I‘ğˆ‚Æ‚µ‚Ä’Ç‰Á
         if ax + 1 < self.size and board[ax + 1, ay] == 0:
             d.append("RIGHT")
         if ax - 1 > -1 and board[ax - 1, ay] == 0:
@@ -97,9 +97,9 @@ class Bot(Snake):
             d.append("DOWN")
 
         if ene_num == 3: 
-            #if abs(fx-ax)<3 and abs(fy-ay)<3:     #foodã¾ã§ã®è·é›¢ãŒç¸¦æ¨ª2ãƒã‚¹ä»¥å†…ãªã‚‰å–ã‚Šã«è¡Œã
+            #if abs(fx-ax)<3 and abs(fy-ay)<3:     #food‚Ü‚Å‚Ì‹——£‚ªc‰¡2ƒ}ƒXˆÈ“à‚È‚çæ‚è‚És‚­
             if food_closest:
-                print("ä¸€ç•ªè¿‘ã„ï¼ï¼")
+                print("ˆê”Ô‹ß‚¢II")
                 if fx-ax>0 and (board[ax + 1, ay] <2 ):
                     board[zx,zy] = board[ax,ay]
                     return "RIGHT"
@@ -121,7 +121,7 @@ class Bot(Snake):
 
         elif ene_num == 2:
             if food_closest:
-                print("ä¸€ç•ªè¿‘ã„ï¼ï¼")
+                print("ˆê”Ô‹ß‚¢II")
                 if fx-ax>0 and (board[ax + 1, ay] <2 ):
                     board[zx,zy] = board[ax,ay]
                     return "RIGHT"
@@ -147,7 +147,7 @@ class Bot(Snake):
 
 
     def __1vs1(self,data,board,player,enemys):
-        #è‡ªåˆ†ã®ä½“ã®æœ€åˆã¨æœ€å¾Œã®åº§æ¨™ã‚’å–å¾—
+        #©•ª‚Ì‘Ì‚ÌÅ‰‚ÆÅŒã‚ÌÀ•W‚ğæ“¾
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
         if data["turn"] > 1: 
@@ -155,13 +155,13 @@ class Bot(Snake):
         
         d = []
         
-        #è‡ªåˆ†ã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
+        #©•ª‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
         fx,fy,fmin = self.__get_food_mindis(data,player)
 
-        #æ•µã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
+        #“G‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
         ene_fx,ene_fy,ene_fmin = self.__get_food_mindis(data,enemys)
 
-        #ç§»å‹•å¯èƒ½ãªå ´æ‰€ã‚’é¸æŠè‚¢ã¨ã—ã¦è¿½åŠ 
+        #ˆÚ“®‰Â”\‚ÈêŠ‚ğ‘I‘ğˆ‚Æ‚µ‚Ä’Ç‰Á
         if ax + 1 < self.size and board[ax + 1, ay] == 0:
             d.append("RIGHT")
         if ax - 1 > -1 and board[ax - 1, ay] == 0:
@@ -171,19 +171,19 @@ class Bot(Snake):
         if ay - 1 > -1 and board[ax, ay - 1] == 0:
             d.append("DOWN")
         
-        #å›²ã„ã‚’ä½œã‚‹æˆ¦æ³•
-        if ((0<fx<data["size"]-1) and (0<fy<data["size"]-1) and(len(player["body"])== 7) or (len(player["body"])==8) and fmin == 1):
+        #ˆÍ‚¢‚ğì‚éí–@
+        if ((0<fx<data["size"]-1) and (0<fy<data["size"]-1)) and((len(player["body"])== 7) or (len(player["body"])==8)) and fmin == 1:
             if abs(fx-ax)<2 and abs(fy-ay)<2:
                 tmp = self.__enclosure(board,player,fx,fy)
                 return tmp
 
-        if fx-ax>0 and ((board[ax + 1, ay] <2 )or ((ax+1==zx)and(ay==zy))):
+        if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
         	return "RIGHT"
-        elif fx-ax<0 and ((board[ax - 1, ay] <2 )or ((ax-1==zx)and(ay==zy))):
+        elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
         	return "LEFT"
-        elif fy-ay>0 and ((board[ax , ay + 1] <2 )or ((ax==zx)and(ay+1==zy))):
+        elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
         	return "UP"
-        elif fy-ay<0 and ((board[ax , ay - 1] <2 )or ((ax==zx)and(ay-1==zy))):
+        elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
         	return "DOWN"
         elif len(d) == 0:
             return "UP"
