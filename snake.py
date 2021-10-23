@@ -13,6 +13,7 @@ class Miya(Snake):
         super().__init__(name)
         self.size = 0
         self.kakomiko=False
+        self.eruzio=False
 
     # 終了時(ゲームオーバー or 勝利)に呼ばれる
     def end(self, data):
@@ -152,6 +153,7 @@ class Miya(Snake):
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
         d = []
+        dd = []
         xx,yy=0,0
         #自分の頭から一番近い餌の座標を取得
 
@@ -183,6 +185,15 @@ class Miya(Snake):
             counter=0
             xx=fx
             yy=fy
+        """ 長さを敵の長さより1大きくに変更する"""
+        if ((fx==0) or (fy==0) or (fy==self.size-1) or (fx==self.size-1)) and(len(player["body"])> 3) and (fmin < 2) and (kakomiko==False):
+            self.eruzio=True
+            dddd.clear()
+            dddd=[]
+            counterz=0
+            counter=0
+            xx=fx
+            yy=fy
         
         if self.kakomiko==True:
             if zx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
@@ -202,24 +213,90 @@ class Miya(Snake):
                 if counter==2:
                     self.kakomiko=False
 
+        if self.eruzio==True:
+            counterz+=1
+            if counterz==1:
+                if ax + 1 < self.size and board[ax + 1, ay] == 0:
+                    dddd.append("RIGHT")
+                    return "RIGHT"
+                if ax - 1 > -1 and board[ax - 1, ay] == 0:
+                    dddd.append("LEFT")
+                    return "LEFT"
+                if ay + 1 < self.size and board[ax, ay + 1] == 0:
+                    dddd.append("UP")
+                    return "UP"
+                if ay - 1 > -1 and board[ax, ay - 1] == 0:
+                    dddd.append("DOWN")
+                    return "DOWN"
+                else:
+                    if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
+                        return "RIGHT"
+                    elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
+                        return "LEFT"
+                    elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
+                        return "UP"
+                    elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
+                        return "DOWN"
+                    elif len(d) == 0:
+                        return "UP"
+
+            elif counterz==2:
+                if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
+                    return "RIGHT"
+                elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
+                    return "LEFT"
+                elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
+                    return "UP"
+                elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
+                    return "DOWN"
+            elif counterz==3:
+                return random.choice(dddd)
+            else:
+                if zx-ax>0 and ((board[ax + 1, ay]==0 ) or ((ax+1==zx)and(ay==zy))):
+                    return "RIGHT"
+                elif zx-ax<0 and ((board[ax - 1, ay]==0 ) or ((ax-1==zx)and(ay==zy))):
+                    return "LEFT"
+                elif zy-ay>0 and ((board[ax , ay + 1]==0 ) or ((ax==zx)and(ay+1==zy))):
+                    return "UP"
+                elif zy-ay<0 and ((board[ax , ay - 1]==0 ) or ((ax==zx)and(ay-1==zy))):
+                    return "DOWN"
+            if board[xx,yy]==0:
+                counter+=1
+                if counter==2:
+                    self.eruzio=False
 
         
 
 
 
-        if self.kakomiko==False:
-            if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
-                return "RIGHT"
-            elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
-                return "LEFT"
-            elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
-                return "UP"
-            elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
-                return "DOWN"
-            elif len(d) == 0:
-                return "UP"
-            else: 
-                return random.choice(d)
+        if (self.kakomiko==False) and (self.eruzio==False):
+            if ((fx<4) or (self.size-4<4)) and ((fy>2) or (self.size-1>fy)):
+                if fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
+                    return "UP"
+                elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
+                    return "DOWN"
+                elif fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
+                    return "RIGHT"
+                elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
+                    return "LEFT"
+
+                elif len(d) == 0:
+                    return "UP"
+                else: 
+                    return random.choice(d)
+            else:    
+                if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
+                    return "RIGHT"
+                elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
+                    return "LEFT"
+                elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
+                    return "UP"
+                elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
+                    return "DOWN"
+                elif len(d) == 0:
+                    return "UP"
+                else: 
+                    return random.choice(d)
 
         
 
