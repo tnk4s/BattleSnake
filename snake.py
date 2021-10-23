@@ -7,11 +7,12 @@ from battlesnake import Snake
 
 # class名を変更。他のチームとかぶらないように
 
+class Miya(Snake):
 
-class Bot(Snake):
     def __init__(self, name):
         super().__init__(name)
         self.size = 0
+        self.kakomiko=False
 
     # 終了時(ゲームオーバー or 勝利)に呼ばれる
     def end(self, data):
@@ -150,13 +151,12 @@ class Bot(Snake):
         #自分の体の最初と最後の座標を取得
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
-        if data["turn"] > 1: 
-            board[zx,zy] = 0
-        
         d = []
-        
+        xx,yy=0,0
         #自分の頭から一番近い餌の座標を取得
+
         fx,fy,fmin = self.__get_food_mindis(data,player)
+
 
         #敵の頭から一番近い餌の座標を取得
         ene_fx,ene_fy,ene_fmin = self.__get_food_mindis(data,enemys)
@@ -170,24 +170,59 @@ class Bot(Snake):
             d.append("UP")
         if ay - 1 > -1 and board[ax, ay - 1] == 0:
             d.append("DOWN")
+
         
         #囲いを作る戦法
-        if ((0<fx<data["size"]-1) and (0<fy<data["size"]-1)) and((len(player["body"])== 7) or (len(player["body"])==8)) and fmin == 1:
+        if ((0<fx<data["size"]-1) and (0<fy<data["size"]-1)) and(len(player["body"])> 7) and fmin == 1:
             if abs(fx-ax)<2 and abs(fy-ay)<2:
                 tmp = self.__enclosure(board,player,fx,fy)
                 return tmp
+        
+        if (((fx==0) and ((fy==0) or (fy==self.size-1))) or ((fx==self.size-1) and ((fy==0) or (fy==self.size-1)))) and(len(player["body"])> 3) and (fmin < 2):
+            self.kakomiko=True
+            counter=0
+            xx=fx
+            yy=fy
+        
+        if self.kakomiko==True:
+            if zx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
+                return "RIGHT"
+            elif zx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
+                return "LEFT"
+            elif zy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
+                return "UP"
+            elif zy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
+                return "DOWN"
+            elif len(d) == 0:
+                return "UP"
+            else: 
+                return random.choice(d)
+            if board[xx,yy]==0:
+                counter+=1
+                if counter==2:
+                    self.kakomiko=False
 
-        if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
-        	return "RIGHT"
-        elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
-        	return "LEFT"
-        elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
-        	return "UP"
-        elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
-        	return "DOWN"
-        elif len(d) == 0:
-            return "UP"
-        else: return random.choice(d)
+
+        
+
+
+
+        if self.kakomiko==False:
+            if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
+                return "RIGHT"
+            elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
+                return "LEFT"
+            elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
+                return "UP"
+            elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
+                return "DOWN"
+            elif len(d) == 0:
+                return "UP"
+            else: 
+                return random.choice(d)
+
+        
+
 
     def __get_ene_data(self,data):
         ene_datas = []
@@ -210,6 +245,7 @@ class Bot(Snake):
         		fy=j
         return fx,fy,food_mindis
 
+            
     def __enclosure(self,board,player,fx,fy):
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
