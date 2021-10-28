@@ -48,7 +48,7 @@ class Bot(Snake):
         zx, zy = player["body"][-1]
 
         #自分の体の最後の座標を一時的に0にすることで移動可能マスとして扱う
-        if player["health"] != 100 : 
+        if player["health"] != 100 and data["turn"] > 2: 
             board[zx,zy] = 0
 
         if len(enemies) == 1:
