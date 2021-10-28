@@ -165,8 +165,34 @@ class MonteBotRe(Snake):
                         return rand_d
             except:
                 traceback.print_exc()
-                print("rand_d = ",rand_d)
-                return rand_d
+                print("Command MASSA in Exception")
+                #===================================from v1.0.3
+                fx=fy=6
+                mindis=20
+                for i,j in data["food"]:
+                    distance=abs(i-x)+abs(j-y)
+                    if mindis>distance:
+                        mindis=distance
+                        fx=i
+                        fy=j
+                if fx-x>0 and (board[x + 1, y] <2 ) and "RIGHT" in d:
+                    print("MASSA RIGHT")
+                    return "RIGHT"
+                elif fx-x<0 and (board[x - 1, y] <2 ) and "LEFT" in d:
+                    print("MASSA LEFT")
+                    return "LEFT"
+                elif fy-y>0 and (board[x , y + 1] <2 ) and "UP" in d:
+                    print("MASSA UP")
+                    return "UP"
+                elif fy-y<0 and (board[x , y - 1] <2 ) and "DOWN" in d:
+                    print("MASSA DOWN")
+                    return "DOWN"
+                elif len(d) == 0:
+                    print("Dead end. Good bye.")
+                    return "UP"
+                #===================================
+                else:
+                    return rand_d
             #'''
 
             
