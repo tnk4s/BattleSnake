@@ -2,20 +2,22 @@ import random
 
 import numpy as np
 
-# ©•ª—p‚ÌSnake‚ğì‚é‚É‚ÍAbattlesnake‚Å’è‹`‚³‚ê‚Ä‚¢‚éSnake‚ğŒp³‚·‚é•K—v‚ª‚ ‚é
+#è‡ªåˆ†ç”¨ã®Snakeã‚’ä½œã‚‹ã«ã¯ã€battlesnakeã§å®šç¾©ã•ã‚Œã¦ã„ã‚‹Snakeã‚’ç¶™æ‰¿ã™ã‚‹å¿…è¦ãŒã‚ã‚‹
 from battlesnake import Snake
 
-# class–¼‚ğ•ÏXB‘¼‚Ìƒ`[ƒ€‚Æ‚©‚Ô‚ç‚È‚¢‚æ‚¤‚É
+# classåã‚’å¤‰æ›´ã€‚ä»–ã®ãƒãƒ¼ãƒ ã¨ã‹ã¶ã‚‰ãªã„ã‚ˆã†ã«
 
-class Miya(Snake):
+class Bot(Snake):
 
     def __init__(self, name):
         super().__init__(name)
         self.size = 0
-        self.kakomiko=False
-        self.eruzio=False
+        self.food_closest = False
+        self.strategy = "food"
+        self.s_count = 0
+        self.eruzio_d = ""
 
-    # I—¹(ƒQ[ƒ€ƒI[ƒo[ or Ÿ—˜)‚ÉŒÄ‚Î‚ê‚é
+    # çµ‚äº†æ™‚(ã‚²ãƒ¼ãƒ ã‚ªãƒ¼ãƒãƒ¼ or å‹åˆ©)ã«å‘¼ã°ã‚Œã‚‹
     def end(self, data):
         # print(f"{self.name} end")
         pass
@@ -35,294 +37,339 @@ class Miya(Snake):
 
         return board
 
-    # ‹ß‚­‚Éfood‚ª‚ ‚éê‡‚Íæ‚è‚És‚­B
-    # Šî–{‚ÍˆÚ“®‚Å‚«‚é‚Æ‚±‚ë‚ğƒ‰ƒ“ƒ_ƒ€‚Å
+    # è¿‘ãã«foodãŒã‚ã‚‹å ´åˆã¯å–ã‚Šã«è¡Œãã€‚
+    # åŸºæœ¬ã¯ç§»å‹•ã§ãã‚‹ã¨ã“ã‚ã‚’ãƒ©ãƒ³ãƒ€ãƒ ã§
     def move(self, data):
         board = self.__get_board(data)
         player = [p for p in data["players"] if p["name"] == self.name][0]
+        enemies = [p for p in data["players"] if p["name"] != self.name]
 
-        #©•ª(a)ˆÈŠO‚Í‰a‚ğ—Dæ“I‚Éæ‚è‚És‚­ƒ‚[ƒh‚ÅƒvƒŒƒC
-        if player["name"] != "a":
-            tmp = self.__enemy_move(data,player)
-            return tmp
-
-        print("food",data["food"])
-        #enemys:“G‚Ìplayersƒf[ƒ^B“G‚ª•¡”‚¢‚Ä‚àŠÇ—‚Å‚«‚é‚æ‚¤‚É‚µ‚½
-        enemys = self.__get_ene_data(data)
-        ene_num = len(enemys)
-
-        d = []
-        food_closest =True
-        
-        #“G‚Ì”‚ª1‘Ì‚Ì‚Í__1vs1‚Åæ“¾
-        if ene_num == 1:
-            tmp = self.__1vs1(data,board,player,enemys[0])
-            return tmp
-
-        #©•ª‚Ì‘Ì‚ÌÅ‰‚ÆÅŒã‚ÌÀ•W‚ğæ“¾
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
-        #©•ª‚Ì‘Ì‚ÌÅŒã‚ÌÀ•W‚ğˆê“I‚É0‚É‚·‚é‚±‚Æ‚ÅˆÚ“®‰Â”\ƒ}ƒX‚Æ‚µ‚Äˆµ‚¤
-        if data["turn"] > 1: 
+
+        #è‡ªåˆ†ã®ä½“ã®æœ€å¾Œã®åº§æ¨™ã‚’ä¸€æ™‚çš„ã«0ã«ã™ã‚‹ã“ã¨ã§ç§»å‹•å¯èƒ½ãƒã‚¹ã¨ã—ã¦æ‰±ã†
+        if player["health"] != 100 : 
             board[zx,zy] = 0
-        
-        #©•ª‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
-        fx,fy,fmin = self.__get_food_mindis(data,player)
-        #print(fx,fy,fmin)
 
-        #“G‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
-        ene_food_mindis = [[0 for i in range(3)] for j in range(ene_num)]
-        for n in range(ene_num):
-            ene_fx,ene_fy,ene_fmin = self.__get_food_mindis(data,enemys[n])
-            ene_food_mindis[n][0] = ene_fx
-            ene_food_mindis[n][1] = ene_fy
-            ene_food_mindis[n][2] = ene_fmin
-            #“G‚Ìˆê”Ô‹ß‚¢‰a‚ª©•ª‚Æ“¯‚¶‚Æ‚«AÅ’Z‹——£‚ğ”äŠr‚·‚é
-            if fx==ene_fx and fy==ene_fy:
-                if fmin > ene_fmin:
-                    food_closest = False #ˆê”Ô‹ß‚­‚È‚¢‚ÍFalse
-                elif fmin == ene_fmin:
-                    #‹——£‚ª“¯‚¶‚Æ‚«‚Í‘Ì‚Ì’·‚³‚Å”»’è
-                    food_closest = (len(player["body"])>len(enemys[n]["body"]))
+        if len(enemies) == 1:
+            d = self.__1vs1(data,board,player,enemies)
+        else:
+            d = self.__BattleRoyal(data,board,player,enemies)
 
-        #print(ene_food_mindis)        
+        board[zx,zy] = board[ax,ay] 
+        print(d)
+        return d
 
-
-        #ˆÚ“®‰Â”\‚ÈêŠ‚ğ‘I‘ğˆ‚Æ‚µ‚Ä’Ç‰Á
-        if ax + 1 < self.size and board[ax + 1, ay] == 0:
-            d.append("RIGHT")
-        if ax - 1 > -1 and board[ax - 1, ay] == 0:
-            d.append("LEFT")
-        if ay + 1 < self.size and board[ax, ay + 1] == 0:
-            d.append("UP")
-        if ay - 1 > -1 and board[ax, ay - 1] == 0:
-            d.append("DOWN")
-
-        if ene_num == 3: 
-            #if abs(fx-ax)<3 and abs(fy-ay)<3:     #food‚Ü‚Å‚Ì‹——£‚ªc‰¡2ƒ}ƒXˆÈ“à‚È‚çæ‚è‚És‚­
-            if food_closest:
-                print("ˆê”Ô‹ß‚¢II")
-                if fx-ax>0 and (board[ax + 1, ay] <2 ):
-                    board[zx,zy] = board[ax,ay]
-                    return "RIGHT"
-                elif fx-ax<0 and (board[ax - 1, ay] <2 ):
-                    board[zx,zy] = board[ax,ay]
-                    return "LEFT"
-                elif fy-ay>0 and (board[ax , ay + 1] <2 ):
-                    board[zx,zy] = board[ax,ay]
-                    return "UP"
-                elif fy-ay<0 and (board[ax , ay - 1] <2 ):
-                    board[zx,zy] = board[ax,ay]
-                    return "DOWN"
-            if len(d) == 0:
-                board[zx,zy] = board[ax,ay]
-                return "UP"
-            else:
-                board[zx,zy] = board[ax,ay]
-                return random.choice(d)
-
-        elif ene_num == 2:
-            if food_closest:
-                print("ˆê”Ô‹ß‚¢II")
-                if fx-ax>0 and (board[ax + 1, ay] <2 ):
-                    board[zx,zy] = board[ax,ay]
-                    return "RIGHT"
-                elif fx-ax<0 and (board[ax - 1, ay] <2 ):
-                    board[zx,zy] = board[ax,ay]
-                    return "LEFT"
-                elif fy-ay>0 and (board[ax , ay + 1] <2 ):
-                    board[zx,zy] = board[ax,ay]
-                    return "UP"
-                elif fy-ay<0 and (board[ax , ay - 1] <2 ):
-                    board[zx,zy] = board[ax,ay]
-                    return "DOWN" 
-            if len(d) == 0:
-                board[zx,zy] = board[ax,ay]
-                return "UP"
-            else:
-                board[zx,zy] = board[ax,ay]
-                return random.choice(d)
-        
-        else: 
-            board[zx,zy] = board[ax,ay]
-            return random.choice(d)
-
-
-    def __1vs1(self,data,board,player,enemys):
-        #©•ª‚Ì‘Ì‚ÌÅ‰‚ÆÅŒã‚ÌÀ•W‚ğæ“¾
+    def __BattleRoyal(self,data,board,player,enemies):
+        #ene_num = len(enemies)
+        d = []
+        print("food",data["food"])
+        #è‡ªåˆ†ã®ä½“ã®æœ€åˆã¨æœ€å¾Œã®åº§æ¨™ã‚’å–å¾—
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
-        d = []
-        dd = []
-        xx,yy=0,0
-        #©•ª‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
-
-        fx,fy,fmin = self.__get_food_mindis(data,player)
-
-
-        #“G‚Ì“ª‚©‚çˆê”Ô‹ß‚¢‰a‚ÌÀ•W‚ğæ“¾
-        ene_fx,ene_fy,ene_fmin = self.__get_food_mindis(data,enemys)
-
-        #ˆÚ“®‰Â”\‚ÈêŠ‚ğ‘I‘ğˆ‚Æ‚µ‚Ä’Ç‰Á
-        if ax + 1 < self.size and board[ax + 1, ay] == 0:
-            d.append("RIGHT")
-        if ax - 1 > -1 and board[ax - 1, ay] == 0:
-            d.append("LEFT")
-        if ay + 1 < self.size and board[ax, ay + 1] == 0:
-            d.append("UP")
-        if ay - 1 > -1 and board[ax, ay - 1] == 0:
-            d.append("DOWN")
-
         
-        #ˆÍ‚¢‚ğì‚éí–@
-        if ((0<fx<data["size"]-1) and (0<fy<data["size"]-1)) and(len(player["body"])> 7) and fmin == 1:
-            if abs(fx-ax)<2 and abs(fy-ay)<2:
-                tmp = self.__enclosure(board,player,fx,fy)
-                return tmp
+        #è‡ªåˆ†ã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
+        food_mindis,ene_food_mindis,priority_food = self.__get_food_mindis(data,board,player,enemies)
         
-        if (((fx==0) and ((fy==0) or (fy==self.size-1))) or ((fx==self.size-1) and ((fy==0) or (fy==self.size-1)))) and(len(player["body"])> 3) and (fmin < 2):
-            self.kakomiko=True
-            counter=0
-            xx=fx
-            yy=fy
-        """ ’·‚³‚ğ“G‚Ì’·‚³‚æ‚è1‘å‚«‚­‚É•ÏX‚·‚é"""
-        if ((fx==0) or (fy==0) or (fy==self.size-1) or (fx==self.size-1)) and(len(player["body"])> 3) and (fmin < 2) and (kakomiko==False):
-            self.eruzio=True
-            dddd.clear()
-            dddd=[]
-            counterz=0
-            counter=0
-            xx=fx
-            yy=fy
-        
-        if self.kakomiko==True:
-            if zx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
-                return "RIGHT"
-            elif zx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
-                return "LEFT"
-            elif zy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
-                return "UP"
-            elif zy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
-                return "DOWN"
-            elif len(d) == 0:
-                return "UP"
-            else: 
-                return random.choice(d)
-            if board[xx,yy]==0:
-                counter+=1
-                if counter==2:
-                    self.kakomiko=False
+        if priority_food != 100:
+            fx,fy = data["food"][priority_food]
+            fmin = food_mindis[priority_food]
+            able_d = self.__move_check(board,player,enemies)
+            print("å–ã‚Šã«è¡Œãã¹ãé¤Œã¯(",fx,fy,")ã§æœ€çŸ­è·é›¢ã¯",fmin,"ã§ã™")
+            best_d,flag = self.__best_route(board,player,fx,fy,0,0)
+            if best_d in able_d:
+                print(best_d,"ã«é€²ã¿ã¾ã™")
+                return best_d
 
-        if self.eruzio==True:
-            counterz+=1
-            if counterz==1:
-                if ax + 1 < self.size and board[ax + 1, ay] == 0:
-                    dddd.append("RIGHT")
-                    return "RIGHT"
-                if ax - 1 > -1 and board[ax - 1, ay] == 0:
-                    dddd.append("LEFT")
-                    return "LEFT"
-                if ay + 1 < self.size and board[ax, ay + 1] == 0:
-                    dddd.append("UP")
-                    return "UP"
-                if ay - 1 > -1 and board[ax, ay - 1] == 0:
-                    dddd.append("DOWN")
-                    return "DOWN"
-                else:
-                    if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
-                        return "RIGHT"
-                    elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
-                        return "LEFT"
-                    elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
-                        return "UP"
-                    elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
-                        return "DOWN"
-                    elif len(d) == 0:
-                        return "UP"
-
-            elif counterz==2:
-                if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
-                    return "RIGHT"
-                elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
-                    return "LEFT"
-                elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
-                    return "UP"
-                elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
-                    return "DOWN"
-            elif counterz==3:
-                return random.choice(dddd)
+            able_d = self.__move_check(board,player,enemies)
+            escape_d = self.__escape(board,player,enemies)
+            if escape_d in able_d:
+                return escape_d
+            elif len(able_d) != 0:
+                return random.choice(able_d)
             else:
-                if zx-ax>0 and ((board[ax + 1, ay]==0 ) or ((ax+1==zx)and(ay==zy))):
-                    return "RIGHT"
-                elif zx-ax<0 and ((board[ax - 1, ay]==0 ) or ((ax-1==zx)and(ay==zy))):
-                    return "LEFT"
-                elif zy-ay>0 and ((board[ax , ay + 1]==0 ) or ((ax==zx)and(ay+1==zy))):
-                    return "UP"
-                elif zy-ay<0 and ((board[ax , ay - 1]==0 ) or ((ax==zx)and(ay-1==zy))):
-                    return "DOWN"
-            if board[xx,yy]==0:
-                counter+=1
-                if counter==2:
-                    self.eruzio=False
-
-        
+                if ax + 1 < self.size and board[ax + 1, ay] == 0:
+                    return "RIGHT" 
+                if ax - 1 > -1 and board[ax - 1, ay] == 0:
+                    return "LEFT" 
+                if ay + 1 < self.size and board[ax, ay + 1] == 0:
+                    return "UP" 
+                if ay - 1 > -1 and board[ax, ay - 1] == 0:
+                    return "DOWN" 
+        else:
+            print("ä¸€ç•ªè¿‘ã„é¤Œã¯ã‚ã‚Šã¾ã›ã‚“")
+            return self.__escape(board,player,enemies)
 
 
-
-        if (self.kakomiko==False) and (self.eruzio==False):
-            if ((fx<4) or (self.size-4<4)) and ((fy>2) or (self.size-1>fy)):
-                if fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
-                    return "UP"
-                elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
-                    return "DOWN"
-                elif fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
-                    return "RIGHT"
-                elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
-                    return "LEFT"
-
-                elif len(d) == 0:
-                    return "UP"
-                else: 
-                    return random.choice(d)
-            else:    
-                if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
-                    return "RIGHT"
-                elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
-                    return "LEFT"
-                elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
-                    return "UP"
-                elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
-                    return "DOWN"
-                elif len(d) == 0:
-                    return "UP"
-                else: 
-                    return random.choice(d)
-
-        
-
-
-    def __get_ene_data(self,data):
-        ene_datas = []
-        for i in data["players"]:
-            if i["name"]!=self.name:
-                enemy = [p for p in data["players"] if p["name"] == i["name"]][0]
-                ene_datas.append(enemy)
-        return ene_datas
-
-    def __get_food_mindis(self,data,player):
+    def __1vs1(self,data,board,player,enemies):
+        #è‡ªåˆ†ã®ä½“ã®æœ€åˆã¨æœ€å¾Œã®åº§æ¨™ã‚’å–å¾—
         ax, ay = player["body"][0]
-        #print(ax,ay)
-        fx=fy=6
-        food_mindis=20
-        for i,j in data["food"]:
-        	distance=abs(i-ax)+abs(j-ay)
-        	if food_mindis>distance:
-        		food_mindis=distance
-        		fx=i
-        		fy=j
-        return fx,fy,food_mindis
+        zx, zy = player["body"][-1]
 
-            
+        #è‡ªåˆ†ã®é ­ã‹ã‚‰ä¸€ç•ªè¿‘ã„é¤Œã®åº§æ¨™ã‚’å–å¾—
+        food_mindis,ene_food_mindis,priority_food = self.__get_food_mindis(data,board,player,enemies)
+        
+        if priority_food != 100:
+            fx,fy = data["food"][priority_food]
+            fmin = food_mindis[priority_food]
+            able_d = self.__move_check(board,player,enemies)
+            print("å–ã‚Šã«è¡Œãã¹ãé¤Œã¯(",fx,fy,")ã§æœ€çŸ­è·é›¢ã¯",fmin,"ã§ã™")
+            best_d,flag = self.__best_route(board,player,fx,fy,0,0)
+            self.__strategy_decision(board,player,enemies,fx,fy)
+            if flag != "ERROR" and self.strategy != "food":
+                strategy_d =  self.__strategy(board,player,enemies,fx,fy)
+                if strategy_d in able_d:
+                    print(strategy_d,"ã«é€²ã¿ã¾ã™")
+                    return strategy_d
+            elif best_d in able_d:
+                print(best_d,"ã«é€²ã¿ã¾ã™")
+                return best_d
+
+            able_d = self.__move_check(board,player,enemies)
+            escape_d = self.__escape(board,player,enemies)
+            if escape_d in able_d:
+                return escape_d
+            elif len(able_d) != 0:
+                return random.choice(able_d)
+            else:
+                if ax + 1 < self.size and board[ax + 1, ay] == 0:
+                    return "RIGHT" 
+                if ax - 1 > -1 and board[ax - 1, ay] == 0:
+                    return "LEFT" 
+                if ay + 1 < self.size and board[ax, ay + 1] == 0:
+                    return "UP" 
+                if ay - 1 > -1 and board[ax, ay - 1] == 0:
+                    return "DOWN" 
+        else:
+            print("ä¸€ç•ªè¿‘ã„é¤Œã¯ã‚ã‚Šã¾ã›ã‚“")
+            return self.__escape(board,player,enemies)
+
+                    
+    def __get_food_mindis(self,data,board,player,enemies):
+        ax,ay = player["body"][0]
+        enemies_head = [enemy["body"][0] for enemy in enemies]
+        tmp_closest = True
+        self.food_closest = False
+        mindis = 100
+        priority_food = 100
+        
+        food_mindis=[]
+        tmp = []
+        ene_food_mindis = []
+        for i,food in enumerate(data["food"]):
+            fx,fy = food
+            food_mindis.append(abs(fx-ax)+abs(fy-ay))
+            #é¤ŒãŒè§’ã«ã‚ã£ãŸã‚‰3ãƒã‚¹ä»¥ä¸Šå·®ãŒç„¡ã„ã¨å–ã‚Šã«ã„ã‘ãªã„ã‚ˆã†ã«ã™ã‚‹
+            if (fx==0 or fx==data["size"]-1) and (fy==0 or fy==data["size"]-1):
+                food_mindis[i] += 2
+            tmp_closest = True
+            #é¤Œã®æœ€çŸ­è·é›¢ã‚’è‡ªåˆ†ã¨ä»–ã®æ•µã§æ¯”è¼ƒã™ã‚‹
+            for j, enemy_head in enumerate(enemies_head):
+                ene_ax, ene_ay = enemy_head
+                tmp.append(abs(fx-ene_ax)+abs(fy-ene_ay))
+                if food_mindis[i] > tmp[j] or (food_mindis[i] == tmp[j] and len(player["body"]) <= len(enemies[j]["body"])):
+                    tmp_closest = False
+            #æœ€çŸ­è·é›¢ã®é¤ŒãŒè¤‡æ•°ã‚ã‚‹ã¨ãã¯,1ç•ªè·é›¢ãŒçŸ­ã„é¤Œã‚’é¸ã¶
+            if tmp_closest == True:
+                self.food_closest = True
+                if mindis > food_mindis[i]:
+                    mindis = food_mindis[i]
+                    priority_food = i
+                    
+            ene_food_mindis.append(tmp)
+            tmp.clear()
+
+        return food_mindis,ene_food_mindis,priority_food
+
+
+    def __avoid_collision(self, x, y, player, enemies):
+        enemies_head = [enemy["body"][0] for enemy in enemies]
+        player_len = len(player["body"])
+        enemies_len = [len(enemy["body"]) for enemy in enemies]
+
+        for i, enemy_head in enumerate(enemies_head):
+            enemy_x, enemy_y = enemy_head
+            if abs(x - enemy_x) + abs(y - enemy_y) == 1 and player_len <= enemies_len[i]:
+                return False
+
+        return True
+
+
+    def __move_check(self, board,player,enemies):
+        ax,ay = player["body"][0]
+        d = []
+        if ax - 1 > -1 and board[ax - 1, ay] < 2 and self.__avoid_collision(ax - 1, ay, player, enemies):
+            d.append("LEFT")
+        if ax + 1 < self.size and board[ax + 1, ay] < 2 and self.__avoid_collision(ax + 1, ay, player, enemies):
+            d.append("RIGHT") 
+        if ay - 1 > -1 and board[ax , ay - 1] < 2 and self.__avoid_collision(ax, ay - 1, player, enemies):
+            d.append("DOWN") 
+        if ay + 1 < self.size and board[ax , ay + 1] < 2 and self.__avoid_collision(ax, ay + 1, player, enemies):
+            d.append("UP") 
+
+        return d
+
+
+    def __best_route(self,board,player,fx,fy,x,y):
+        ax, ay = player["body"][0]
+        d = "ERROR"
+        flag = False
+        if ax-fx > 0:
+            x_code = -1
+        else:
+            x_code = 1
+        if ay-fy > 0:
+            y_code = -1
+        else:
+            y_code = 1
+
+        if (ax-fx > -x and x_code == -1) or (ax-fx < -x and x_code == 1):
+            print("aa")
+            x += x_code
+            if board[ax+x][ay] == 0:
+                d,flag = self.__best_route(board,player,fx,fy,x,y)
+                print("x",d)
+            elif board[ax+x][ay] == 1:
+                if x_code == 1:
+                    d = "RIGHT"
+                elif x_code == -1:
+                    d = "LEFT"
+                return d, True
+            else:
+                if  (ay-fy > -y and y_code == -1) or (ay-fy < -y and y_code == 1):
+                    x -= x_code
+                    y += y_code
+                    d,flag = self.__best_route(board,player,fx,fy,x,y)
+                else:
+                    return "ERROR", False
+        
+        if d != "ERROR" and flag == True:
+            if x_code == 1:
+                d = "RIGHT"
+            elif x_code == -1:
+                d = "LEFT"
+            return d, True
+        elif (ay-fy > -y and y_code == -1) or (ay-fy < -y and y_code == 1):
+            print("bb")
+            y += y_code
+            if board[ax+x][ay+y] == 0:
+                d,flag = self.__best_route(board,player,fx,fy,x,y)
+                print("y",d)
+            elif board[ax+x][ay+y] == 1:
+                if y_code == 1:
+                    d = "UP"
+                elif y_code == -1:
+                    d = "DOWN"
+                return d, True
+            else:
+                return "ERROR", False
+        
+        if d != "ERROR" and flag == True:
+            if y_code == 1:
+                    d = "UP"
+            elif y_code == -1:
+                d = "DOWN"
+            return d, True
+
+        return "ERROR", True
+
+
+    def __strategy_decision(self,board,player,enemies,fx,fy):
+        ax, ay = player["body"][0]
+        my_health = player["health"]
+        ene_health = enemies[0]["health"]
+        fmin = abs(fx-ax)+abs(fy-ay)
+        """ é•·ã•ã‚’æ•µã®é•·ã•ã‚ˆã‚Š1å¤§ããã«å¤‰æ›´ã™ã‚‹"""
+        #é¤Œã¾ã‚ã‚Šã«å›²ã„ã‚’ä½œã‚Œã‚‹ã‹åˆ¤å®š
+        if ((0<fx<self.size-1) and (0<fy<self.size-1)) and((len(player["body"]) == 7)or(len(player["body"]) == 8))and ((fmin<2) or (fmin<3 and self.strategy=="enclosure")):
+            if self.strategy == "enclosure":
+                self.s_count -= 1
+            else:
+                self.strategy = "enclosure"
+                if my_health > ene_health:
+                    self.s_count = my_health - 2
+                else:
+                    self.s_count = 50
+        #ä½œæˆ¦ãŒç¶šè¡Œã§ããªããªã£ãŸã¨ã(é¤ŒãŒã¨ã‚‰ã‚ŒãŸã¨ããªã©)ã¯1ã‚¿ãƒ¼ãƒ³ã ã‘ä½œæˆ¦ã‚’ç¶šè¡Œã™ã‚‹ã‚ˆã†ã«ã™ã‚‹
+        elif self.strategy != "food" and self.s_count > 0:
+            print(self.strategy,"ä½œæˆ¦ã¯æ¬¡ã‚¿ãƒ¼ãƒ³ã§çµ‚ã‚ã‚Š")
+            self.s_count = 0
+        elif self.s_count == 0:
+            self.strategy = "food"
+        print("ä½œæˆ¦ï¼š",self.strategy)
+
+
+    def __strategy(self,board,player,enemies,fx,fy):
+        if self.strategy == "kakomiko":
+            d = self.__kakomiko(board,player,fx,fy)
+        elif self.strategy == "eruzio":
+            d = self.__eruzio(board,player,fx,fy)
+        elif self.strategy == "enclosure":
+            d = self.__enclosure(board,player,fx,fy)
+
+        if d == "ERROR":
+            print("ä½œæˆ¦å¤±æ•—")
+        return d
+
+        
+    def __kakomiko(self,board,player,fx,fy):
+        ax, ay = player["body"][0]
+        zx, zy = player["body"][-1]
+
+        if zx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
+            return "RIGHT"
+        elif zx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
+            return "LEFT"
+        elif zy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
+            return "UP"
+        elif zy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
+            return "DOWN"
+        else:
+            return "ERROR"
+
+
+    def __eruzio(self,board,player,fx,fy):
+        ax, ay = player["body"][0]
+        zx, zy = player["body"][-1]
+
+        #ãˆã‚‹ã˜ãŠãŒèµ·å‹•ã—ã¦ä¸€å›ç›®
+        if self.s_count == 50:
+            if ax + 1 < self.size and board[ax + 1, ay] == 0:
+                self.eruzio_d = "RIGHT"
+            if ax - 1 > -1 and board[ax - 1, ay] == 0:
+                self.eruzio_d = "LEFT"
+            if ay + 1 < self.size and board[ax, ay + 1] == 0:
+                self.eruzio_d = "UP"
+            if ay - 1 > -1 and board[ax, ay - 1] == 0:
+                self.eruzio_d = "DOWN"
+            else:
+                self.eruzio_d = "ERROR"
+            return self.eruzio_d
+
+        elif self.s_count == 49:
+            if fx-ax>0 and ((board[ax + 1, ay] <2 ) or ((ax+1==zx)and(ay==zy))):
+                return "RIGHT"
+            elif fx-ax<0 and ((board[ax - 1, ay] <2 ) or ((ax-1==zx)and(ay==zy))):
+                return "LEFT"
+            elif fy-ay>0 and ((board[ax , ay + 1] <2 ) or ((ax==zx)and(ay+1==zy))):
+                return "UP"
+            elif fy-ay<0 and ((board[ax , ay - 1] <2 ) or ((ax==zx)and(ay-1==zy))):
+                return "DOWN"
+            else:
+                return "ERROR"
+        elif self.s_count == 48:
+            return self.eruzio_d
+        else:
+            if zx-ax>0 and ((board[ax + 1, ay]==0 ) or ((ax+1==zx)and(ay==zy))):
+                return "RIGHT"
+            elif zx-ax<0 and ((board[ax - 1, ay]==0 ) or ((ax-1==zx)and(ay==zy))):
+                return "LEFT"
+            elif zy-ay>0 and ((board[ax , ay + 1]==0 ) or ((ax==zx)and(ay+1==zy))):
+                return "UP"
+            elif zy-ay<0 and ((board[ax , ay - 1]==0 ) or ((ax==zx)and(ay-1==zy))):
+                return "DOWN"
+
+
     def __enclosure(self,board,player,fx,fy):
         ax, ay = player["body"][0]
         zx, zy = player["body"][-1]
@@ -340,43 +387,62 @@ class Miya(Snake):
         if len(d)!=0:
             return random.choice(d)
         else: 
-            return "UP"
+            return "ERROR"
 
-    def __enemy_move(self,data,player):
-        board = self.__get_board(data)
-        head = player["body"][0]
+    #ãƒœãƒ¼ãƒ‰ã‚’åˆ†å‰²ã—ã¦æ•µãŒã„ãªã„ã¨ã“ã‚ã«è¡Œã
+    def __escape(self, board, player, enemies):
+        ax, ay = player["body"][0]
+        zx, zy = player["body"][-1]
 
-        x, y = head
         d = []
 
-        fx=fy=6
-        
-        mindis=20
-        for i,j in data["food"]:
-        	distance=abs(i-x)+abs(j-y)
-        	if mindis>distance:
-        		mindis=distance
-        		fx=i
-        		fy=j
-        
+        tx = 5
+        ty = 5
 
-        if x + 1 < self.size and board[x + 1, y] == 0:
-            d.append("RIGHT")
-        if x - 1 > -1 and board[x - 1, y] == 0:
-            d.append("LEFT")
-        if y + 1 < self.size and board[x, y + 1] == 0:
-            d.append("UP")
-        if y - 1 > -1 and board[x, y - 1] == 0:
-            d.append("DOWN")
+        #ã‚¨ãƒªã‚¢ã”ã¨ã«0ã¨1ä»¥å¤–ã®æ•°ã‚’æ•°ãˆã‚‹ã€‚å·¦ä¸‹0ã€å³ä¸‹1ã€å·¦ä¸Š2ã€å³ä¸Š3ã€‚
+        area = [0, 0, 0, 0]
+        for i in range(0,11):
+            for j in range(0,11):
+                if board[i,j] > 1:
+                    if i < 5 and j < 6:
+                        area[0] += 1
+                    elif j < 6:
+                        area[1] += 1
+                    elif i < 5:
+                        area[2] += 1
+                    else:
+                        area[3] += 1
+        print(area)
+        #ç›®çš„åœ°æ±ºå®š
+        if area[0] <= area[1] and area[0] <= area[2] and area[0] <= area[3]:
+            tx = 2
+            ty = 2
+        elif area[1] <= area[0] and area[1] <= area[2] and area[1] <= area[3]:
+            tx = 8
+            ty = 2
+        elif area[2] <= area[0] and area[2] <= area[1] and area[2] <= area[3]:
+            tx = 2
+            ty = 8
+        elif area[3] <= area[0] and area[3] <= area[1] and area[3] <= area[2]:
+            tx = 8
+            ty = 8
+        print(tx,ty)
 
-        if fx-x>0 and (board[x + 1, y] <2 ):
-        	return "RIGHT"
-        elif fx-x<0 and (board[x - 1, y] <2 ):
-        	return "LEFT"
-        elif fy-y>0 and (board[x , y + 1] <2 ):
-        	return "UP"
-        elif fy-y<0 and (board[x , y - 1] <2 ):
-        	return "DOWN"
-        elif len(d) == 0:
+        d = self.__move_check(board,player,enemies)
+        
+        if tx-ax>0 and ((board[ax + 1, ay] <2 )):
+            if "RIGHT" in d:
+        	    return "RIGHT"
+        elif tx-ax<0 and ((board[ax - 1, ay] <2 )):
+            if "LEFT" in d:
+        	    return "LEFT"
+        elif ty-ay>0 and ((board[ax , ay + 1] <2 )):
+            if "UP" in d:
+        	    return "UP"
+        elif ty-ay<0 and ((board[ax , ay - 1] <2 )):
+            if "DOWN" in d:
+        	    return "DOWN"
+        
+        if len(d) == 0:
             return "UP"
         else: return random.choice(d)
