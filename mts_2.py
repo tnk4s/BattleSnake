@@ -3,6 +3,7 @@ import traceback
 import numpy as np
 import copy
 import pickle
+import queue
 
 class MTS:
     def __init__(self, name, size):
@@ -38,13 +39,106 @@ class MTS:
         for e in ene_names:
             p = self.__get_one_data(self.org_data, e)
             if len(p["body"]) < 1:
-                continue
+                continue            
             px, py = p["body"][0]
             x,y = min_heads
 
             if (px + py) < (x+y):
                 min_enename = e
         return min_enename
+
+    def __check_dead_end(self, player_data, v_board, direction):#幅優先ぽい
+        hx, hy = player_data["body"][0]
+        if direction == 0:
+            x = hx + 1
+            y = hy
+        elif direction == 1:
+            x = hx - 1
+            y = hy
+        elif direction == 2:
+            x = hx
+            y = hy + 1
+        elif direction == 3:
+            x = hx
+            y = hy - 1
+
+        if x >= self.size or x < 0:
+            return False
+        elif y >= self.size or y < 0:
+            return False
+
+        N = 4 #4無かったらFalse
+        dist = {}
+        already = [(hx,hy)]
+
+        que = queue.Queue()
+        
+        #s_key = "(" + str(x) + "," + str(y) + ")" #(x,y)
+        s_key = (x,y)
+        dist[s_key] = 0
+        que.put((x,y))
+
+        while not que.empty():
+            #print("before que.qsize() ", que.qsize())
+            v = que.get() # キューから先頭頂点を取り出す
+            #print("after que.qsize() ", que.qsize())
+            if s_key == None:
+                x,y = v
+                #s_key = "(" + str(x) + "," + str(y) + ")" #(x,y)
+                s_key = (x,y)
+            
+            for d in range(4):
+                if d == 0:
+                    if x+1 >= self.size or (x+1,y) in dist.keys():#既に発見済みなら探索しない
+                        continue
+                    if  v_board[x+1, y] < 2:
+                        #new_key = "(" + str(x+1) + "," + str(y) + ")" #(x,y)
+                        new_key = (x+1, y)
+                        dist[new_key] = dist[s_key] + 1
+                        #already.append((x+1, y))
+                        que.put((x+1, y))
+                elif d == 1:
+                    if x-1 < 0 or (x-1,y) in dist.keys():
+                        continue
+                    if v_board[x-1, y] < 2:
+                        #new_key = "(" + str(x-1) + "," + str(y) + ")" #(x,y)
+                        new_key = (x-1, y)
+                        dist[new_key] = dist[s_key] + 1
+                        #already.append((x-1, y))
+                        que.put((x-1, y))
+                elif d == 2:
+                    if y+1 >= self.size or (x,y+1) in dist.keys():
+                        continue
+                    if v_board[x, y+1] < 2:
+                        #new_key = "(" + str(x) + "," + str(y+1) + ")" #(x,y)
+                        new_key = (x, y+1)
+                        dist[new_key] = dist[s_key] + 1
+                        #already.append((x, y+1))
+                        que.put((x, y+1))
+                elif d == 3:
+                    if y-1 < 0 or (x,y-1) in dist.keys():
+                        continue
+                    if v_board[x, y-1] < 2:
+                        #new_key = "(" + str(x) + "," + str(y-1) + ")" #(x,y)
+                        new_key = (x, y-1)
+                        dist[new_key] = dist[s_key] + 1
+                        #already.append((x, y-1))
+                        que.put((x, y-1))
+                if dist[s_key] >= N :
+                    print("N = ", dist[s_key])
+                    return True
+            s_key = None
+        
+        buf = -1
+        for v in dist.values():
+            if buf < v:
+                buf = v
+        
+        print("N = ", buf)
+        if buf < N:
+            print("==WARNING DEAD END==")
+            return False
+        return True
 
     def __direction_limiter(self, player_data, v_board, direction):
         v_d = []
@@ -96,7 +190,7 @@ class MTS:
     def __make_v_data(self, data, board, ene_names, my_d, direction):
         #v_data = copy.deepcopy(data)
         v_data = pickle.loads(pickle.dumps(data, -1))
-        v_board = copy.deepcopy(board)
+        v_board = pickle.loads(pickle.dumps(board, -1))
 
         directions = []
         directions.append(my_d)
@@ -128,7 +222,7 @@ class MTS:
                 ene_count = ene_count + 1
 
             if d == 0:
-                #player["body"].insert(0, (hx + 1, hy))
+                #player["body"].insert(0, (hx + 1, hy)):
                 v_data["players"][i]["body"].insert(0, (hx + 1, hy))
                 if hx + 1 < self.size and v_board[hx + 1, hy] == 1:#進んだ先に飯があったら
                     food_flag = True
@@ -143,7 +237,7 @@ class MTS:
                 if hy + 1 < self.size and v_board[hx, hy + 1] == 1:
                     food_flag = True
             elif d == 3:
-                player["body"].insert(0, (hx, hy - 1))
+                #player["body"].insert(0, (hx, hy - 1))
                 v_data["players"][i]["body"].insert(0, (hx, hy - 1))
                 if hy - 1 < self.size and v_board[hx, hy - 1] == 1:
                     food_flag = True
@@ -159,6 +253,7 @@ class MTS:
         for i,p in enumerate(v_data["players"]):#新しい位置を更新
             for b in p["body"]:
                 bx,by = b
+                
                 if p["health"] == 0:
                     v_board[bx, by] = 0
                 else:
@@ -261,7 +356,7 @@ class MTS:
                             #print("Enemy ", ene_name," can't go ", self.choices[direction[self.ene_id[ene_name]]])
                             retry_flag = True
                 
-                if not retry_flag:
+                if retry_flag == False:
                     if direction[self.ene_id[self.recently_ene]] != old_target_ene_d:#==============================
                     #if True:
                         old_target_ene_d = direction[self.ene_id[self.recently_ene]]
@@ -295,9 +390,53 @@ class MTS:
                             direction[ii - 1] = direction[ii - 1] + 1
             turn_flag = True
 
-    def monte_direction_indicator(self, size, player, ene_names, data, board):
+    def __dangerous_direction(self, data, enenames, will_direction):
+        my_data = self.__get_one_data(data, self.name)
+        
+        ene_datas = []
+        for e_name in enenames:
+            ene_datas.append(self.__get_one_data(data, e_name))
+        
+        x,y = my_data["body"][0]
+        if will_direction == 0:
+            x = x + 1
+        elif will_direction == 1:
+            x = x - 1
+        elif will_direction == 2:
+            y = y + 1
+        elif will_direction == 3:
+            y = y - 1
+        
+        d_flag = False
+        for e in ene_datas:
+            if len(e["body"]) < 1:
+                continue
+            ex, ey = e["body"][0]
+            if x + 1 == ex and y == ey:
+                if len(e["body"]) >= len(my_data["body"]):
+                    d_flag = True
+            if x - 1 == ex and y == ey:
+                if len(e["body"]) >= len(my_data["body"]):
+                    d_flag = True
+            if x == ex and y + 1 == ey:
+                if len(e["body"]) >= len(my_data["body"]):
+                    d_flag = True
+            if x == ex and y - 1 == ey:
+                if len(e["body"]) >= len(my_data["body"]):
+                    d_flag = True
+            
+            if d_flag:
+                print("==WARNIGN High Lv Enemies==")
+                return True
+        return False
 
+    def monte_direction_indicator(self, size, player, ene_names, data, board):
+        if len(ene_names) == 0:
+            print("WIN!?")
+            return "RAND"
         self.size = size
+        org_player = copy.deepcopy(player)
+        #print("self.size ",self.size)
         #my_ene_names = []
         #my_ene_names = ene_names.keys()
         self.ene_id = {}
@@ -314,8 +453,9 @@ class MTS:
         pt_tmp = 1000
         for i,c in enumerate(self.direction_pts):
             if pt_tmp > c and i not in self.dict_dead:
-                pt_tmp = c
-                result = i
+                if self.__check_dead_end(org_player, board, i) and not self.__dangerous_direction(data, ene_names, i):#袋小路回避
+                    pt_tmp = c
+                    result = i
         
         #hx, hy = player["body"][0]
         #fx, fy = self.__get_food_posi(hx, hy)
